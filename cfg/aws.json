@@ -1,0 +1,16 @@
+{
+  "bucket_name": "picassound",
+  "queue_name": "picassound",
+  "sqs": {
+    "server": "queue.amazonaws.com",
+    "port": 443,
+    "protocol": "https",
+    "multi_thread": false
+  },
+  "s3": {
+    "server": "s3.amazonaws.com",
+    "port": 443,
+    "protocol": "https",
+    "multi_thread": false
+  }
+}
