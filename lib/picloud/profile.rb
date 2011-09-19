@@ -5,16 +5,13 @@ require "picloud/string_extensions"
 
 module Picloud
 
-  module Profile
-    class << self
-      include AWS
-    end
+  class << (Profile = Object.new)
 
-    def self.store(profile)
-      key = bucket.key(profile_key profile)
+    def store(profile)
+      key = Aws.bucket.key(profile_key profile)
       if key.exists?
         begin
-          loaded_profile = Profile.load key, profile[:device_id]
+          loaded_profile = Profile.load key
           if loaded_profile[:device_id] != profile[:device_id]
             raise InvalidDeviceIdError.new profile[:id], profile[:device_id]
           end
@@ -23,15 +20,15 @@ module Picloud
         end
       end
 
-      json_profile = profile.to_json
-      bucket.put((profile_key profile), json_profile)
+      json_profile = profile.to_json + "\n" #JSON.pretty_generate profile
+      Aws.bucket.put((profile_key profile), json_profile)
     end
 
-    def self.load(profile_id)
+    def load(profile_id)
       key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
       raise UnknownProfileIdError.new profile_id unless key.exists?
 
-      json_profile = bucket.get key
+      json_profile = Aws.bucket.get key
       begin
         profile = JSON.parse(json_profile, :symbolize_names => true)
       rescue JSON::ParserError => ex
@@ -41,7 +38,7 @@ module Picloud
       return profile
     end
 
-    def self.create(device_id, songs, profile_id = nil)
+    def create(device_id, songs, profile_id = nil)
       profile_id = generate_profile_id if profile_id.nil_or_whitespace?
 
       return {
@@ -51,17 +48,18 @@ module Picloud
       }
     end
 
-    def self.profile_key(arg)
+    private
+
+    def profile_key(arg)
       id = arg.is_a?(Hash) ? arg[:id] : arg
 
-      bucket.key "profiles/#{id}.json"
+      #Aws.bucket.key "profiles/#{id}.json"
+      "profiles/#{id}.json"
     end
 
-    def self.generate_profile_id
+    def generate_profile_id
       UUIDTools::UUID.random_create.to_s
     end
-
-    private_class_method :profile_key, :generate_profile_id
   end
 
   class InvalidDeviceIdError < RuntimeError

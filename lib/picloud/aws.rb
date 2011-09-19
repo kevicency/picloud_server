@@ -3,7 +3,7 @@ require 'right_aws'
 
 module Picloud
 
-  module AWS
+  class << (Aws = Object.new)
 
     def bucket
       s3.bucket aws_config[:bucket_name]

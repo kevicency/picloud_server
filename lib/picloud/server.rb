@@ -7,11 +7,6 @@ module Picloud
 
     set :root, File.expand_path("../../..", __FILE__)
 
-    def initialize
-      super
-      @picassound = Picassound.new
-    end
-
     post "/MusicSync" do
       app_id = params[:App_Id] || params[:app_id]
       device_id = params[:Device_Id] || params[:device_id]
@@ -44,10 +39,11 @@ module Picloud
       end
 
       begin
-        app_id = @picassound.sync_music(device_id, songs, app_id)
+        app_id = Picassound.sync_music(device_id, songs, app_id)
       rescue InvalidDeviceIdError => ex
         halt 403, "Invalid Device Id: #{ex.device_id}"
       end
+
       content_type :json
       return { App_Id:app_id }.to_json
     end
@@ -60,15 +56,14 @@ module Picloud
       device_id = params[:Device_Id]
       image_data = params[:image][:tempfile].read unless params[:image].nil?
 
-      recommended = @picassound.recommend(device_id, app_id, image_data)
+      recommended_songs = Picassound.recommend(device_id, app_id, image_data)
 
-      list = recommended.map {|song| "#{song[:artist]} - #{song[:title]}"}
-      .join "\r\n"
-      return "<body><pre>#{list}</pre></body>"
+      content_type :json
+      return recommended_songs.to_json
     end
 
-    get '/' do
-      erb :index
-    end
+    #get // do
+    #halt 404
+    #end
   end
 end

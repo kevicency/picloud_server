@@ -5,15 +5,10 @@ require "picloud/songlist"
 
 module Picloud
 
-  class Picassound
-
-    def initialize(config = nil)
-      @config = config || JSON.parse((File.read "/local/picassound/picassound.json"), :symbolize_names => true)
-      @songlist = Songlist.new @config[:song_file]
-    end
+  class << (Picassound = Object.new)
 
     def sync_music(device_id, songs, profile_id = nil)
-      songs.each { |song| song[:id] = @songlist.get_id(song) }
+      songs.each { |song| song[:id] = songlist.get_id(song) }
       profile = Profile.create(device_id, songs, profile_id)
       Profile.store profile
 
@@ -31,8 +26,16 @@ module Picloud
 
     private
 
+    def config
+      @config ||= JSON.parse((File.read "/local/picassound/picassound.json"), :symbolize_names => true)
+    end
+
+    def songlist
+      @songlist ||= Songlist.new config[:song_file]
+    end
+
     def recommend_uri
-      URI.parse(@config[:recommend_uri])
+      @recommend_uri ||= URI.parse(config[:recommend_uri])
     end
 
     def recommend_params(device_id, app_id, image_data=nil)
@@ -54,15 +57,14 @@ module Picloud
 
     def parse_recommend_result(result)
       songs = []
+      result.encode!("utf-8")
       return songs if result == "NO_SONGS"
 
-      data = result.split("\r\n")
-      for i in 0...data.length/2
-        songs << {
-          artist: data[i*2],
-          title: data[i*2+1]
-        }
+      ids = result.split("\r\n")
+      ids.each do |i|
+        songs << songlist[i.to_i]
       end
+
       return songs
     end
   end
