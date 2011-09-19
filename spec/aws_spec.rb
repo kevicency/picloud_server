@@ -2,9 +2,9 @@
 
 require 'picloud/aws'
 
-include Picloud::AWS
+include Picloud
 
-describe Picloud::AWS do
+describe Aws do
   before do
     @keys = {
       access_key: "MyAccessKey",
@@ -18,9 +18,11 @@ describe Picloud::AWS do
     }
     @test_config = @keys.merge @config
 
-    File.should_receive(:read).with("/local/picassound/aws.json").and_return(@config.to_json)
-    File.should_receive(:read).with("/local/picassound/aws_keys.json").and_return(@keys.to_json)
+    File.stub!(:read).with("/local/picassound/aws.json").and_return(@config.to_json)
+    File.stub!(:read).with("/local/picassound/aws_keys.json").and_return(@keys.to_json)
   end
+
+  it { should_not == nil }
 
   describe :bucket do
     before do
@@ -33,7 +35,7 @@ describe Picloud::AWS do
         @test_config[:s3]
       ).and_return(s3)
     end
-    subject { bucket }
+    subject { Aws.bucket }
 
     it { should == @bucket}
   end
@@ -49,7 +51,7 @@ describe Picloud::AWS do
         @test_config[:sqs]
       ).and_return(sqs)
     end
-    subject { queue }
+    subject { Aws.queue }
 
     it { should == @queue}
   end

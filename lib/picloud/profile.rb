@@ -8,7 +8,7 @@ module Picloud
   class << (Profile = Object.new)
 
     def store(profile)
-      key = Aws.bucket.key(profile_key profile)
+      key = profile_key profile
       if key.exists?
         begin
           loaded_profile = Profile.load key
@@ -21,7 +21,7 @@ module Picloud
       end
 
       json_profile = profile.to_json + "\n" #JSON.pretty_generate profile
-      Aws.bucket.put((profile_key profile), json_profile)
+      Aws.bucket.put(key, json_profile)
     end
 
     def load(profile_id)
@@ -39,7 +39,9 @@ module Picloud
     end
 
     def create(device_id, songs, profile_id = nil)
-      profile_id = generate_profile_id if profile_id.nil_or_whitespace?
+      if profile_id.nil? || profile_id.whitespace?
+        profile_id = generate_profile_id
+      end
 
       return {
         id: profile_id,
@@ -53,8 +55,7 @@ module Picloud
     def profile_key(arg)
       id = arg.is_a?(Hash) ? arg[:id] : arg
 
-      #Aws.bucket.key "profiles/#{id}.json"
-      "profiles/#{id}.json"
+      Aws.bucket.key "profiles/#{id}.json"
     end
 
     def generate_profile_id

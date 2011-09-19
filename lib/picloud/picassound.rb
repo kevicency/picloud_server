@@ -8,7 +8,7 @@ module Picloud
   class << (Picassound = Object.new)
 
     def sync_music(device_id, songs, profile_id = nil)
-      songs.each { |song| song[:id] = songlist.get_id(song) }
+      songs.each { |song| song[:id] = songlist.get_id(song) unless song[:id]}
       profile = Profile.create(device_id, songs, profile_id)
       Profile.store profile
 

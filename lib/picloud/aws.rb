@@ -20,7 +20,7 @@ module Picloud
         @aws_config = JSON.parse((File.read "/local/picassound/aws_keys.json"), :symbolize_names => true)
         @aws_config.merge! JSON.parse((File.read "/local/picassound/aws.json"), :symbolize_names => true)
       end
-      @aws_config
+      return @aws_config
     end
 
     def s3

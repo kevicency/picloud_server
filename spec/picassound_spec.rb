@@ -2,8 +2,6 @@ require "picloud/picassound"
 
 include Picloud
 
-
-
 describe Picassound do
   before do
     @config = {
@@ -12,36 +10,40 @@ describe Picassound do
     }
     @songlist = mock(Songlist)
 
-    File.should_receive(:read).with("/local/picassound/picassound.json")
-    JSON.should_receive(:parse).and_return @config
-    Songlist.should_receive(:new).and_return @songlist
-
-    @picassound = Picassound.new
+    File.stub!(:read).with("/local/picassound/picassound.json")
+    JSON.stub!(:parse).and_return @config
+    Songlist.stub!(:new).and_return @songlist
   end
 
-  subject { @picassound }
+ # subject { Picassound }
 
-  it "gets initialized" do
-    @picassound.should_not == nil?
-  end
+  #it "gets initialized" do
+    #Picassound.should_not == nil?
+  #end
 
   describe :recommend do
     before do
       @device_id = "MyDevice"
       @app_id = "1"
       @image_data = "image data"
-      @http_res = (1..3).map do |i|
-          ["Artist#{i}","Title#{i}"]
-      end.flatten.join("\r\n")
-      @recommended_songs = (1..3).map do |i|
-        { artist: "Artist#{i}", title: "Title#{i}" }
+      @http_res = mock Net::HTTPResponse
+      @http_res.stub!(:code).and_return "200"
+      @http_res.stub!(:body).and_return(["1","2","3"].join("\r\n"))
+      @recommended_songs = []
+      (1..3).each do |i|
+        song = {
+          artist: "Artist#{i}",
+          title: "Title#{i}" 
+        }
+        @songlist.should_receive(:[]).with(i).and_return(song)
+        @recommended_songs << song
       end
 
       Net::HTTP.should_receive(:post_form)
-        .with(@config[:recommend_uri], {App_Id:@app_id, Device_Id:@device_id})
+        .with(URI.parse(@config[:recommend_uri]), {App_Id:@app_id, Device_Id:@device_id})
         .and_return(@http_res)
     end
-    subject { recommend(@device_id, @app_id, @image_data) }
+    subject { Picassound.recommend(@device_id, @app_id, @image_data) }
 
     it {should == @recommended_songs }
   end
@@ -50,19 +52,19 @@ describe Picassound do
     before do
       @device_id = "MyDevice"
       @app_id = "1"
-      @songs = ["songs"]
+      @songs = [{id:"1"}]
       @profile = {device_id:@device_id, songs:@songs, app_id:@app_id}
 
-      self.should_receive(:create_profile).with(@device_id, @songs, @app_id).and_return(@profile)
-      self.should_receive(:store_profile).with(@profile)
+      Profile.should_receive(:create).with(@device_id, @songs, @app_id).and_return(@profile)
+      Profile.should_receive(:store).with(@profile)
     end
-    subject { sync_music(@device_id, @songs, @app_id) }
+    subject { Picassound.sync_music(@device_id, @songs, @app_id) }
 
-    it { should == profile[:id] }
+    it { should == @profile[:id] }
   end
 
   #describe :recommend_uri do
-    #subject { @picassound.recommend_uri }
+    #subject { Picassound.recommend_uri }
 
     #it { should == URI.parse(@config[:recommend_uri]) }
   #end

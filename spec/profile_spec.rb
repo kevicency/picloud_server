@@ -12,7 +12,7 @@ describe Profile do
 
   it "loads the profile" do
       bucket = mock RightAws::S3::Bucket
-      Profile.should_receive(:bucket).at_least(:once).and_return(bucket)
+      Aws.should_receive(:bucket).at_least(:once).and_return(bucket)
       key = mock RightAws::S3::Key
       key.stub!(:exists?).and_return(true)
       bucket.should_receive(:key).with("profiles/1.json").and_return(key)
@@ -24,8 +24,11 @@ describe Profile do
 
   it "stores the profile" do
       bucket = mock RightAws::S3::Bucket
-      Profile.should_receive(:bucket).and_return(bucket)
-      bucket.should_receive(:put).with("profiles/1.json", @profile.to_json)
+      Aws.should_receive(:bucket).at_least(:once).and_return(bucket)
+      key = mock RightAws::S3::Key
+      key.stub!(:exists?).and_return(false)
+      bucket.should_receive(:key).with("profiles/1.json").and_return(key)
+      bucket.should_receive(:put).with(key, @profile.to_json+"\n")
 
       Profile.store @profile
   end
