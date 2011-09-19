@@ -5,6 +5,6 @@ require "rubygems"
 
 require "picloud/aws"
 require "picloud/picassound"
-require "picloud/picassound_web"
+require "picloud/server"
 require "picloud/songlist"
 require "picloud/profile"

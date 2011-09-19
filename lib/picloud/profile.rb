@@ -1,6 +1,7 @@
 require "json"
 require "uuidtools"
 require "picloud/aws"
+require "picloud/string_extensions"
 
 module Picloud
 
@@ -10,20 +11,38 @@ module Picloud
     end
 
     def self.store(profile)
+      key = bucket.key(profile_key profile)
+      if key.exists?
+        begin
+          loaded_profile = Profile.load key, profile[:device_id]
+          if loaded_profile[:device_id] != profile[:device_id]
+            raise InvalidDeviceIdError.new profile[:id], profile[:device_id]
+          end
+        rescue CorruptProfileError
+          # just override it
+        end
+      end
+
       json_profile = profile.to_json
-      bucket.put((profile_key profile[:id]), json_profile)
+      bucket.put((profile_key profile), json_profile)
     end
 
     def self.load(profile_id)
-      raise "#{profile_id} is null" if profile_id.nil?
+      key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
+      raise UnknownProfileIdError.new profile_id unless key.exists?
 
-      json_profile = bucket.get(profile_key profile_id)
+      json_profile = bucket.get key
+      begin
+        profile = JSON.parse(json_profile, :symbolize_names => true)
+      rescue JSON::ParserError => ex
+        raise CorruptProfileError.new profile_id, ex.message
+      end
 
-      JSON.parse(json_profile, :symbolize_names => true)
+      return profile
     end
 
     def self.create(device_id, songs, profile_id = nil)
-      profile_id = generate_profile_id if profile_id.nil? || profile_id.strip.empty?
+      profile_id = generate_profile_id if profile_id.nil_or_whitespace?
 
       return {
         id: profile_id,
@@ -32,8 +51,10 @@ module Picloud
       }
     end
 
-    def self.profile_key(id)
-      "profiles/#{id}.json"
+    def self.profile_key(arg)
+      id = arg.is_a?(Hash) ? arg[:id] : arg
+
+      bucket.key "profiles/#{id}.json"
     end
 
     def self.generate_profile_id
@@ -41,5 +62,31 @@ module Picloud
     end
 
     private_class_method :profile_key, :generate_profile_id
+  end
+
+  class InvalidDeviceIdError < RuntimeError
+    attr_accessor :profile_id, :device_id
+
+    def initialize(profile_id, device_id)
+      @profile_id = profile_id
+      @device_id = device_id
+    end
+  end
+
+  class UnknownProfileIdError < RuntimeError
+    attr_accessor :profile_id
+
+    def initialize(profile_id)
+      @profile_id = profile_id
+    end
+  end
+
+  class CorruptProfileError < RuntimeError
+    attr_accessor :profile_id
+
+    def initialize(profile_id, message)
+      super message
+      @profile_id = profile_id
+    end
   end
 end

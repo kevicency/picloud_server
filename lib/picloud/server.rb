@@ -43,8 +43,11 @@ module Picloud
         end
       end
 
-      app_id = @picassound.sync_music(device_id, songs, app_id)
-
+      begin
+        app_id = @picassound.sync_music(device_id, songs, app_id)
+      rescue InvalidDeviceIdError => ex
+        halt 403, "Invalid Device Id: #{ex.device_id}"
+      end
       content_type :json
       return { App_Id:app_id }.to_json
     end

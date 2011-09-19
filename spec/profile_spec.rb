@@ -11,9 +11,12 @@ describe Profile do
   #it { Profile.generate_profile_id.should match /[\w]{8}(-[\w]{4}){3}-[\w]{12}/ } #uuid
 
   it "loads the profile" do
-      bucket = mock(RightAws::S3::Bucket)
-      Profile.should_receive(:bucket).and_return bucket
-      bucket.should_receive(:get).with("profiles/1.json").and_return(@profile.to_json)
+      bucket = mock RightAws::S3::Bucket
+      Profile.should_receive(:bucket).at_least(:once).and_return(bucket)
+      key = mock RightAws::S3::Key
+      key.stub!(:exists?).and_return(true)
+      bucket.should_receive(:key).with("profiles/1.json").and_return(key)
+      bucket.should_receive(:get).with(key).and_return(@profile.to_json)
 
       loaded = Profile.load @profile[:id]
       loaded.should == @profile
