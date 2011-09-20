@@ -20,8 +20,8 @@ module Picloud
         end
       end
 
-      json_profile = profile.to_json + "\n" #JSON.pretty_generate profile
-      Aws.bucket.put(key, json_profile)
+      json_profile = profile.to_json #JSON.pretty_generate profile
+      Aws.bucket.put(key, json_profile, {}, nil, {'content-type' => "application/json"})
     end
 
     def load(profile_id)

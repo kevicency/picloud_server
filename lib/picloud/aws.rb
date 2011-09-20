@@ -1,6 +1,15 @@
 require 'json'
 require 'right_aws'
 
+#module RightAws
+  #class S3Interface
+    #alias_method :old_generate_rest_request, :generate_rest_request
+    #def generate_rest_request(method, headers)
+      #puts headers
+      #old_generate_rest_request method, headers
+    #end
+  #end
+#end
 module Picloud
 
   class << (Aws = Object.new)
