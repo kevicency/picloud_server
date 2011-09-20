@@ -28,7 +28,7 @@ describe Profile do
       key = mock RightAws::S3::Key
       key.stub!(:exists?).and_return(false)
       bucket.should_receive(:key).with("profiles/1.json").and_return(key)
-      bucket.should_receive(:put).with(key, @profile.to_json)
+      bucket.should_receive(:put).with(key, @profile.to_json, {}, nil, {'content-type' => "application/json"})
 
       Profile.store @profile
   end

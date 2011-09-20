@@ -1,6 +1,7 @@
 {
   "bucket_name": "picassound",
   "queue_name": "picassound",
+  "encoding": "ISO-8859-1",
   "sqs": {
     "server": "queue.amazonaws.com",
     "port": 443,

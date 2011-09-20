@@ -22,6 +22,10 @@ module Picloud
       sqs.queue aws_config[:queue_name]
     end
 
+    def encoding
+      aws_config[:encoding]
+    end
+
     private
 
     def aws_config

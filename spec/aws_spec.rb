@@ -13,6 +13,7 @@ describe Aws do
     @config = {
       bucket_name: "bucket",
       queue_name: "queue",
+      encoding: "ISO",
       sqs: { server: "queue.amazonaws.com" },
       s3: { server: "s3.amazonaws.com" }
     }
@@ -20,9 +21,8 @@ describe Aws do
 
     File.stub!(:read).with("/local/picassound/aws.json").and_return(@config.to_json)
     File.stub!(:read).with("/local/picassound/aws_keys.json").and_return(@keys.to_json)
+    puts "stubbed"
   end
-
-  it { should_not == nil }
 
   describe :bucket do
     before do
@@ -54,5 +54,11 @@ describe Aws do
     subject { Aws.queue }
 
     it { should == @queue}
+  end
+
+  describe :encoding do
+    subject { Aws.encoding }
+
+    it { should == @test_config[:encoding] }
   end
 end

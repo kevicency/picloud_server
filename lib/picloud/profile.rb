@@ -20,7 +20,7 @@ module Picloud
         end
       end
 
-      json_profile = profile.to_json #JSON.pretty_generate profile
+      json_profile = profile.to_json.encode(Aws.encoding) #JSON.pretty_generate profile
       Aws.bucket.put(key, json_profile, {}, nil, {'content-type' => "application/json"})
     end
 
@@ -28,7 +28,7 @@ module Picloud
       key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
       raise UnknownProfileIdError.new profile_id unless key.exists?
 
-      json_profile = Aws.bucket.get key
+      json_profile = (Aws.bucket.get key).encode("UTF-8")
       begin
         profile = JSON.parse(json_profile, :symbolize_names => true)
       rescue JSON::ParserError => ex
