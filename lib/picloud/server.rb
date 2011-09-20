@@ -62,8 +62,11 @@ module Picloud
       return recommended_songs.to_json
     end
 
-    #get // do
-    #halt 404
-    #end
+    get "/" do
+      if File.exists? "/local/ec2-metadata"
+        hostname = `/local/ec2-metadata -p`.slice /ec2.*$/
+        "Hello from #{hostname || "kev"}"
+      end
+    end
   end
 end

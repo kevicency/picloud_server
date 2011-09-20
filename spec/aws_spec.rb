@@ -21,7 +21,6 @@ describe Aws do
 
     File.stub!(:read).with("/local/picassound/aws.json").and_return(@config.to_json)
     File.stub!(:read).with("/local/picassound/aws_keys.json").and_return(@keys.to_json)
-    puts "stubbed"
   end
 
   describe :bucket do
