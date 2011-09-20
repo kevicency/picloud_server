@@ -17,7 +17,7 @@ task :setup do
   metadata_file = "/local/ec2-metadata"
   unless File.exists? metadata_file
     system "sudo wget http://s3.amazonaws.com/ec2metadata/ec2-metadata -O #{metadata_file}"
-    system "sudo chmod u+x #{metadata_file}"
+    system "sudo chmod 555 #{metadata_file}"
     puts "ec2 metadata file downloaded"
   end
 
