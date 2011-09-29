@@ -17,10 +17,9 @@ module Picloud
               title: data[1]
             }
             add_by_artist song
-            add_by_id song
-
-            i += 1
+            add_by_id song            
           end
+	i += 1
         end
       end if File.exist? song_file
     end
