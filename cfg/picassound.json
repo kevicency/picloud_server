@@ -5,5 +5,5 @@
   "samples_file": "/local/picassound/index/samples",
   "data_file": "/local/picassound/index/data",
   "mappings_dir": "/local/picassound/mappings3/",
-  "images_dir": "/local/picassound/images/"
+  "image_dir": "/local/picassound/images/"
 }

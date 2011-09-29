@@ -14,12 +14,12 @@ module Picloud
             song = {
               id: i,
               artist: data[0],
-              title: data[1]
+             title: data[1]
             }
             add_by_artist song
-            add_by_id song            
+            add_by_id song
           end
-	i += 1
+          i += 1
         end
       end if File.exist? song_file
     end

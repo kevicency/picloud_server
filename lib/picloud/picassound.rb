@@ -1,5 +1,6 @@
 require "net/http"
 require "json"
+require "uuidtools"
 require "picloud/profile"
 require "picloud/songlist"
 
@@ -15,11 +16,12 @@ module Picloud
       return profile[:id]
     end
 
-    def recommend(device_id, app_id, image_data)
-      params = recommend_params(device_id, app_id)
+    def recommend(image_data, device_id = nil, profile_id = nil)
+      image_path = store_image image_data
+      params = build_recommend_params(image_path, device_id, profile_id)
 
-      res = recommend_query params
-      songs = parse_recommend_result res
+      res = get_recommended_song_ids params
+      songs = parse_recommended_song_ids res
 
       return songs
     end
@@ -38,34 +40,43 @@ module Picloud
       @recommend_uri ||= URI.parse(config[:recommend_uri])
     end
 
-    def recommend_params(device_id, app_id, image_data=nil)
-      app_id = app_id || "null"
-      app_id = "null" if app_id.empty?
-      params = {
-        App_Id: app_id || "null",
-        Device_Id: device_id
-      }
+    def build_recommend_params(image_path, device_id, profile_id)
+      params = { Image: image_path }
+      params[:Profile_Id] = profile_id unless profile_id.nil?
+      params[:Device_Id] = device_id unless device_id.nil?
+
       return params
     end
 
-    def recommend_query(params)
+    def get_recommended_song_ids(params)
       res = Net::HTTP.post_form(recommend_uri, params)
-      raise res.message if res.code == "500"
 
-      return res.body
+      case res
+      when Net::HTTPSuccess
+        puts res.body
+        res.body
+      else
+        raise res.error!
+      end
     end
 
-    def parse_recommend_result(result)
+    def parse_recommended_song_ids(result)
       songs = []
-      result.encode!("utf-8")
-      return songs if result == "NO_SONGS"
 
-      ids = result.split("\r\n")
+      ids = JSON.parse(result)
       ids.each do |i|
         songs << songlist[i.to_i]
       end
 
       return songs
+    end
+
+    def store_image(image_data)
+      name = "#{UUIDTools::UUID.random_create.to_s}.jpg"
+      path = File.join(config[:image_dir], name)
+      File.open(path, "w+") {|f| f.write image_data}
+
+      path
     end
   end
 end

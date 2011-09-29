@@ -8,3 +8,9 @@ require "picloud/picassound"
 require "picloud/server"
 require "picloud/songlist"
 require "picloud/profile"
+
+module Picloud
+  def self.version
+    "0.4.0".freeze
+  end
+end

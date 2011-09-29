@@ -8,7 +8,7 @@ module Picloud
     set :root, File.expand_path("../../..", __FILE__)
 
     post "/MusicSync" do
-      app_id = params[:App_Id] || params[:app_id]
+      profile_id = params[:Profile_Id] || params[:profile_id]
       device_id = params[:Device_Id] || params[:device_id]
       songs = []
       if params[:songs].nil?
@@ -29,34 +29,29 @@ module Picloud
           end
         end
       else
-        params[:songs].split("\r\n").each do |song|
-          split = song.split(" - ")
-          songs << {
-            artist:split[0],
-            title:split[1]
-          } if split.length == 2
-        end
+        songs = JSON.parse params[:songs]
       end
 
       begin
-        app_id = Picassound.sync_music(device_id, songs, app_id)
+        profile_id = Picassound.sync_music(device_id, songs, profile_id)
       rescue InvalidDeviceIdError => ex
         halt 403, "Invalid Device Id: #{ex.device_id}"
       end
 
       content_type :json
-      return { App_Id:app_id }.to_json
+      return { Profile_Id:profile_id }.to_json
     end
 
     post "/Recommend" do
-      if params[:App_Id].nil? || params[:Device_Id].nil?
+      if params[:Image].nil?
         halt 400
       end
-      app_id = params[:App_Id]
-      device_id = params[:Device_Id]
-      image_data = params[:image][:tempfile].read unless params[:image].nil?
+      profile_id = params[:Profile_Id] || params[:profile_id]
+      device_id = params[:Device_Id] || params[:device_id]
+      image_data = params[:Image][:tempfile].read
 
-      recommended_songs = Picassound.recommend(device_id, app_id, image_data)
+      recommended_songs = Picassound
+        .recommend(image_data, device_id, profile_id)
 
       content_type :json
       return recommended_songs.to_json
@@ -67,6 +62,10 @@ module Picloud
         hostname = `/local/ec2-metadata -p`.slice /ec2.*$/
         "Hello from #{hostname || "kev"}"
       end
+    end
+
+    get "/test" do
+      erb :index
     end
   end
 end
