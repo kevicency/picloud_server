@@ -1,4 +1,9 @@
 {
   "recommend_uri": "http://localhost:8080/iOS/Recommend",
-  "song_file": "/local/picassound/index/songs"
+  "song_file": "/local/picassound/index/songs",
+  "base_file": "/local/picassound/base",
+  "samples_file": "/local/picassound/index/samples",
+  "data_file": "/local/picassound/index/data",
+  "mappings_dir": "/local/picassound/mappings3/",
+  "images_dir": "/local/picassound/images/"
 }
