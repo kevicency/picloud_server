@@ -6,11 +6,17 @@ module Picloud
   class << (TinySong = Object.new)
 
     def grooveshark_ids(songs)
-      songs.map do |song|
+      ids = []
+      songs.each do |song|
         query = "#{song[:artist]} #{song[:title]}"
+        begin
         res = Grooveshark::TinySong.meta(api_key, query)
-        res["SongId"]
+        rescue
+          res = nil
+        end
+        ids << res["SongID"] unless res.nil?
       end
+      ids
     end
 
     def api_key

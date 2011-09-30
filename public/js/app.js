@@ -1,10 +1,16 @@
 $(document).ready(function() {
+
   function fileLoaded(e) {
     var img = $("#preview");
     img.attr("src", e.target.result);
+    resize(img);
   }
 
   function handleFile(file) {
+    var reader = new FileReader();
+    reader.onloadend = fileLoaded;
+    reader.readAsDataURL(file);
+
     var xhr    = new XMLHttpRequest();
     var upload = xhr.upload;
     xhr.open("POST", "/Play" , true);
@@ -14,10 +20,6 @@ $(document).ready(function() {
         $("#player").html(xhr.responseText)
     }
     xhr.send(file);
-
-    var reader = new FileReader();
-    reader.onloadend = fileLoaded;
-    reader.readAsDataURL(file);
   }
 
   function nullHandler(e) {
@@ -30,7 +32,6 @@ $(document).ready(function() {
 
     var files = e.originalEvent.dataTransfer.files
     var count = files.length
-    console.log(files.length)
     if (count === 1)
       handleFile(files[0])
   }
@@ -38,7 +39,6 @@ $(document).ready(function() {
   var dropbox = $("#dropbox")
   dropbox.bind("dragenter dragexit dragover", nullHandler)
   dropbox.bind("drop", dropHandler)
-  console.log("bound")
 });
 
 

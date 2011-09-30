@@ -17,10 +17,14 @@ module Picloud
     end
 
     def recommend_ids(image_data, device_id = nil, profile_id = nil)
-      image_path = store_image image_data
-      params = build_recommend_params(image_path, device_id, profile_id)
+      # image_path = store_image image_data
+      #params = build_recommend_params(image_path, device_id, profile_id)
 
-      ids = get_recommended_song_ids params
+      #ids = get_recommended_song_ids params
+      ids = []
+      10.times { ids << rand(100000) }
+
+      ids
 
       return ids
     end
@@ -60,7 +64,6 @@ module Picloud
 
       case res
       when Net::HTTPSuccess
-        puts res.body
         JSON.parse(res.body)
       else
         raise res.error!
