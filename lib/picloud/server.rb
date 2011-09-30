@@ -1,5 +1,7 @@
 require "sinatra/base"
 require "picloud/picassound"
+require "picloud/tinysong"
+require "haml"
 
 module Picloud
 
@@ -50,17 +52,19 @@ module Picloud
       device_id = params[:Device_Id] || params[:device_id]
       image_data = params[:Image][:tempfile].read
 
-      recommended_songs = Picassound
-      .recommend_songs(image_data, device_id, profile_id)
+      recommended_songs = Picassound.recommend_songs(image_data, device_id, profile_id)
 
       content_type :json
       return recommended_songs.to_json
     end
 
+    get "/Play" do
+      haml :play
+    end
+
     post "/Play" do
       image_data = request.body.read
-      recommended_songs = Picassound
-      .recommended_songs(image_data, device_id, profile_id)
+      recommended_songs = Picassound.recommend_songs(image_data)
 
       grooveshark_ids = TinySong.grooveshark_ids(recommended_songs).join ","
 

@@ -7,7 +7,7 @@ $(document).ready(function() {
   function handleFile(file) {
     var xhr    = new XMLHttpRequest();
     var upload = xhr.upload;
-    xhr.open("POST", "/upload" , true);
+    xhr.open("POST", "/Play" , true);
     xhr.setRequestHeader('X-Filename', file.name);
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4)
