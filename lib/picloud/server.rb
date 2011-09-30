@@ -51,10 +51,30 @@ module Picloud
       image_data = params[:Image][:tempfile].read
 
       recommended_songs = Picassound
-        .recommend(image_data, device_id, profile_id)
+      .recommend_songs(image_data, device_id, profile_id)
 
       content_type :json
       return recommended_songs.to_json
+    end
+
+    post "/Play" do
+      image_data = request.body.read
+      recommended_songs = Picassound
+      .recommended_songs(image_data, device_id, profile_id)
+
+      grooveshark_ids = TinySong.grooveshark_ids(recommended_songs).join ","
+
+      player_html = <<-HTML
+      <object width="250" height="250">
+        <param name="movie" value="http://grooveshark.com/widget.swf" />
+        <param name="wmode" value="window" /><param name="allowScriptAccess" value="always" />
+        <param name="flashvars" value="hostname=cowbell.grooveshark.com&songIDs=#{grooveshark_ids}&style=metal&p=0" />
+        <embed src="http://grooveshark.com/widget.swf" type="application/x-shockwave-flash" width="250" height="250" flashvars="hostname=cowbell.grooveshark.com&songIDs=#{grooveshark_ids}&p=0" allowScriptAccess="always" wmode="window" />
+      </object>
+      HTML
+
+      response.write(player_html)
+      response.finish
     end
 
     get "/" do
@@ -65,7 +85,7 @@ module Picloud
     end
 
     get "/test" do
-      erb :index
+      erb :test
     end
   end
 end

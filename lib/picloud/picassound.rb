@@ -16,14 +16,21 @@ module Picloud
       return profile[:id]
     end
 
-    def recommend(image_data, device_id = nil, profile_id = nil)
+    def recommend_ids(image_data, device_id = nil, profile_id = nil)
       image_path = store_image image_data
       params = build_recommend_params(image_path, device_id, profile_id)
 
-      res = get_recommended_song_ids params
-      songs = parse_recommended_song_ids res
+      ids = get_recommended_song_ids params
 
-      return songs
+      return ids
+    end
+
+    def recommend_songs(image_data, device_id = nil, profile_id = nil)
+      ids = recommend_ids image_data, device_id, profile_id
+
+      ids.map do |id|
+        songlist[id.to_i]
+      end
     end
 
     private
@@ -54,21 +61,10 @@ module Picloud
       case res
       when Net::HTTPSuccess
         puts res.body
-        res.body
+        JSON.parse(res.body)
       else
         raise res.error!
       end
-    end
-
-    def parse_recommended_song_ids(result)
-      songs = []
-
-      ids = JSON.parse(result)
-      ids.each do |i|
-        songs << songlist[i.to_i]
-      end
-
-      return songs
     end
 
     def store_image(image_data)

@@ -32,8 +32,9 @@ task :setup do
 
   system "sudo rm #{root}*.json -f"
   Dir.glob "./cfg/*.json" do |file|
-    system "sudo ln #{file} #{root}#{File.basename file}"
-    puts "Linked #{file}"
+    #system "sudo ln #{file} #{root}#{File.basename file}"
+    system "sudo cp #{file} #{root}#{File.basename file} -f"
+    puts "Copied #{file}"
   end
 end
 
