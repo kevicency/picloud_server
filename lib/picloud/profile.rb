@@ -1,7 +1,6 @@
 require "json"
 require "uuidtools"
 require "picloud/aws"
-require "picloud/string_extensions"
 
 module Picloud
 

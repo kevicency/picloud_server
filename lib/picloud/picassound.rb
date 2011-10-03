@@ -16,35 +16,31 @@ module Picloud
       return profile[:id]
     end
 
-    def recommend_ids(image_data, device_id = nil, profile_id = nil)
-      # image_path = store_image image_data
-      #params = build_recommend_params(image_path, device_id, profile_id)
+    def recommend_song_ids(image_data, profile_id = nil)
+      image_path = store_image image_data
+      params = build_recommend_params(image_path, "MyDevice", profile_id)
 
-      #ids = get_recommended_song_ids params
-      ids = []
-      10.times { ids << rand(100000) }
-
-      ids
-
+      ids = get_recommended_song_ids params
+      puts ids
       return ids
     end
 
-    def recommend_songs(image_data, device_id = nil, profile_id = nil)
-      ids = recommend_ids image_data, device_id, profile_id
+    def recommend_songs(image_data, profile_id = nil)
+      ids = recommend_ids image_data, profile_id
 
       ids.map do |id|
         songlist[id.to_i]
       end
     end
 
+    def songlist
+      @songlist ||= Songlist.new config[:song_file]
+    end
+
     private
 
     def config
       @config ||= JSON.parse((File.read "/local/picassound/picassound.json"), :symbolize_names => true)
-    end
-
-    def songlist
-      @songlist ||= Songlist.new config[:song_file]
     end
 
     def recommend_uri
@@ -62,9 +58,10 @@ module Picloud
     def get_recommended_song_ids(params)
       res = Net::HTTP.post_form(recommend_uri, params)
 
-      case res
-      when Net::HTTPSuccess
-        JSON.parse(res.body)
+      puts res.body
+      if res.is_a? Net::HTTPSuccess
+        puts "success"
+        return JSON.parse(res.body)
       else
         raise res.error!
       end

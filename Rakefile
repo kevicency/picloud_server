@@ -1,40 +1,52 @@
 require "rake/testtask"
+require "json"
 
 #Rake::TestTask.new do |t|
-  #t.libs << "test"
-  #t.test_files = FileList["test/test_*.rb"]
+#t.libs << "test"
+#t.test_files = FileList["test/test_*.rb"]
 #end
 
 task :console do
   exec "irb -Ilib -picloud"
 end
 
-task :run do
+task :run => :setup do
   exec "rvmsudo rackup -p 80"
 end
 
-task :setup do
+task :setup => [:check_picassound, :copy_configs, :load_ec2_metadata] do
+
+end
+
+task :load_ec2_metadata do
   metadata_file = "/local/ec2-metadata"
+
   unless File.exists? metadata_file
     system "sudo wget http://s3.amazonaws.com/ec2metadata/ec2-metadata -O #{metadata_file}"
     system "sudo chmod 555 #{metadata_file}"
     puts "ec2 metadata file downloaded"
   end
+end
 
-  #json stuff
-  raise "./cfg/aws_keys.json not found" unless File.exists? "./cfg/aws_keys.json"
+task :copy_configs do
+  config_files = ["aws", "aws_keys", "picassound"]
+  local_root = "/local/picassound/"
+  config_files.map {|file| "./cfg/#{file}.json" }.each do |file|
+    raise "#{file} not found" unless File.exists? file
+    system "sudo cp #{file} #{local_root}#{File.basename file} -f"
+  end
+end
 
-  root = "/local/picassound/"
-  index_dir = "#{root}index/"
-
-  Dir.mkdir root unless Dir.exists? root
-  Dir.mkdir index_dir unless Dir.exists? index_dir
-
-  system "sudo rm #{root}*.json -f"
-  Dir.glob "./cfg/*.json" do |file|
-    #system "sudo ln #{file} #{root}#{File.basename file}"
-    system "sudo cp #{file} #{root}#{File.basename file} -f"
-    puts "Copied #{file}"
+task :check_picassound do
+  config = File.read "./cfg/picassound.json"
+  files = JSON.parse config, :symbolize_names => true
+  files.each do |name, path|
+    case name
+    when /.*file/
+      raise "#{path} not found" unless File.exists? path
+    when /.*dir/
+      raise "#{path} doesn't exist" unless Dir.exists? path
+    end
   end
 end
 
