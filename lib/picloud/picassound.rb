@@ -8,24 +8,18 @@ module Picloud
 
   class << (Picassound = Object.new)
 
-    def sync_music(device_id, songs, profile_id = nil)
-      songs.each { |song| song[:id] = songlist.get_id(song) unless song[:id]}
-      profile = Profile.create(device_id, songs, profile_id)
-      Profile.store profile
-
-      return profile[:id]
-    end
-
-    def recommend_song_ids(image_data, profile_id = nil)
+    def recommend_for_profile(image_data, profile_id = nil)
       image_path = store_image image_data
       params = build_recommend_params(image_path, "MyDevice", profile_id)
 
-      ids = get_recommended_song_ids params
+      ids = post_request params
       puts ids
       return ids
     end
 
-    def recommend_songs(image_data, profile_id = nil)
+    def recommend(image_data, available_song_ids)
+      image_path = store_image image_path
+      params = build_recommend_params(image_path, "MyDevice", available_song_ids)
       ids = recommend_ids image_data, profile_id
 
       ids.map do |id|
@@ -55,12 +49,10 @@ module Picloud
       return params
     end
 
-    def get_recommended_song_ids(params)
+    def post_request(params)
       res = Net::HTTP.post_form(recommend_uri, params)
 
-      puts res.body
       if res.is_a? Net::HTTPSuccess
-        puts "success"
         return JSON.parse(res.body)
       else
         raise res.error!
