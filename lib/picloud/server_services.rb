@@ -62,6 +62,7 @@ module Picloud
     post "recommend" do
       halt 400 if request.content_type != "application/json"
       body = JSON.parse request.body.read, :symbolize_names => true
+      halt 400 if body[:image].nil?
       recommended_songs = Picassound.recommend(body[:image], body[:song_ids])
 
       content_type :json

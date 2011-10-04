@@ -8,23 +8,20 @@ module Picloud
 
   class << (Picassound = Object.new)
 
-    def recommend_for_profile(image_data, profile_id = nil)
-      image_path = store_image image_data
-      params = build_recommend_params(image_path, "MyDevice", profile_id)
-
-      ids = post_request params
-      puts ids
-      return ids
+    def recommend_for_profile(image_data, profile_id)
+      image_path = store_image image_path
+      params = {
+        Image: image_path,
+        ProfileId: profile_id
+      }
+      post_request params
     end
 
     def recommend(image_data, available_song_ids)
       image_path = store_image image_path
-      params = build_recommend_params(image_path, "MyDevice", available_song_ids)
-      ids = recommend_ids image_data, profile_id
+      params = recommend_params(image_path, available_song_ids)
 
-      ids.map do |id|
-        songlist[id.to_i]
-      end
+      post_request params
     end
 
     def songlist
@@ -41,10 +38,9 @@ module Picloud
       @recommend_uri ||= URI.parse(config[:recommend_uri])
     end
 
-    def build_recommend_params(image_path, device_id, profile_id)
+    def recommend_params(image_path, song_ids = nil)
       params = { Image: image_path }
-      params[:Profile_Id] = profile_id unless profile_id.nil?
-      params[:Device_Id] = device_id unless device_id.nil?
+      params[:SongIds] = song_ids.join(",") unless song_ids.nil?
 
       return params
     end
@@ -53,7 +49,10 @@ module Picloud
       res = Net::HTTP.post_form(recommend_uri, params)
 
       if res.is_a? Net::HTTPSuccess
-        return JSON.parse(res.body)
+        ids = JSON.parse(res.body)
+        ids.map do |id|
+          songlist[id.to_i]
+        end
       else
         raise res.error!
       end
