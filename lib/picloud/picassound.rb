@@ -8,18 +8,18 @@ module Picloud
 
   class << (Picassound = Object.new)
 
-    def recommend_for_profile(image_data, profile_id)
-      image_path = store_image image_path
+    def recommend_for_profile(image, profile_id)
+      image_file = store_image image
       params = {
-        Image: image_path,
+        Image: image_file,
         ProfileId: profile_id
       }
       post_request params
     end
 
-    def recommend(image_data, available_song_ids)
-      image_path = store_image image_path
-      params = recommend_params(image_path, available_song_ids)
+    def recommend(image, available_song_ids)
+      image_file = store_image image
+      params = recommend_params(image_file, available_song_ids)
 
       post_request params
     end
@@ -38,8 +38,8 @@ module Picloud
       @recommend_uri ||= URI.parse(config[:recommend_uri])
     end
 
-    def recommend_params(image_path, song_ids = nil)
-      params = { Image: image_path }
+    def recommend_params(image_file, song_ids = nil)
+      params = { Image: image_file }
       params[:SongIds] = song_ids.join(",") unless song_ids.nil?
 
       return params
@@ -58,10 +58,10 @@ module Picloud
       end
     end
 
-    def store_image(image_data)
-      name = "#{UUIDTools::UUID.random_create.to_s}.jpg"
+    def store_image(image)
+      name = "#{UUIDTools::UUID.random_create.to_s}.#{image[:type]}"
       path = File.join(config[:image_dir], name)
-      File.open(path, "w+") {|f| f.write image_data}
+      File.open(path, "w") {|f| f.write image[:data]}
 
       path
     end

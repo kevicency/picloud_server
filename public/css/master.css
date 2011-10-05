@@ -1,0 +1,55 @@
+#dropbox {
+  width: 640px;
+  height: 480px;
+  border: 3px dashed gray;
+  float: left;
+  padding: 3px;
+}
+
+#preview {
+  max-width: 100%;
+  max-height: 100%;
+  font-weight: bold;
+  font-size: 18px;
+  color: gray;
+}
+
+#playlist {
+  float: left;
+  margin-left: 5px;
+  width: 480px;
+}
+
+#errors {
+  float: bottom;
+  margin-top: 5px;
+}
+
+#playlist > h1 {
+  font-size: 24px;
+  margin-top: 3px;
+}
+
+#songlist {
+  list-style: bullet;
+  margin-top: 1px;
+}
+
+.song {
+  padding-bottom: 3px;
+}
+
+.artist {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.title {
+  font-size: 14px;
+  font-style: italic;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}

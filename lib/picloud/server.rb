@@ -8,8 +8,15 @@ module Picloud
 
     set :root, File.expand_path("../../..", __FILE__)
 
-  
-     get "/healthy" do
+    get "/" do
+      haml :index
+    end
+
+    get "/foo" do
+      erb :foo
+    end
+
+    get "/healthy" do
       if File.exists? "/local/ec2-metadata"
         hostname = `/local/ec2-metadata -p`.slice /ec2.*$/
         "Hello from #{hostname || "kev"}"

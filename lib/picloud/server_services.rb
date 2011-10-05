@@ -52,21 +52,35 @@ module Picloud
     end
 
     post "/profiles/:id/recommend" do
-      image_data = request.body.read
-      recommended_songs = Picassound.recommend_for_profile(image_data, params[:id])
+      image = {
+        type: (get_image_type request.content_type),
+        data: (request.body.read)
+      }
+      halt 400, "Invalid Content-Type" unless image[:type]
+      recommended_songs = Picassound.recommend_for_profile(image, params[:id])
 
       content_type :json
       recommended_songs.to_json
     end
 
-    post "recommend" do
-      halt 400 if request.content_type != "application/json"
-      body = JSON.parse request.body.read, :symbolize_names => true
-      halt 400 if body[:image].nil?
-      recommended_songs = Picassound.recommend(body[:image], body[:song_ids])
+    post "/recommend" do
+      image = {
+        type: (get_image_type request.content_type),
+        data: (request.body.read)
+      }
+      halt 400, "Invalid Content-Type" unless image[:type]
+      ids = params[:song_ids].split(",").map{|id| id.to_i} if params[:song_ids]
+      recommended_songs = Picassound.recommend(image, ids)
 
       content_type :json
       recommended_songs.to_json
+    end
+
+    private
+
+    def get_image_type(content_type)
+      match = content_type.match /image\/(?<type>\w+)/ if content_type
+      match[:type] if match
     end
   end
 end
