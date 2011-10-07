@@ -6,7 +6,7 @@ module Picloud
       @songs_by_artist = {}
       @songs_by_id = []
       i = 0
-      File.open(song_file, "r") do |file|
+      File.open(song_file, "r:UTF-8") do |file|
         while (line = file.gets) do
           data = line.strip.split '\_/'
           #raise "Invalid song: #{line}" unless data.length == 2

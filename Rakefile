@@ -11,7 +11,7 @@ task :console do
 end
 
 task :run => :setup do
-  exec "rvmsudo thin -R config.ru -p 80 -d"
+  exec "rvmsudo thin start -R config.ru -p 80 -d"
 end
 
 task :setup => [:check_picassound, :copy_configs, :load_ec2_metadata] do
