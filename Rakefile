@@ -50,16 +50,22 @@ task :check_picassound do
   end
 end
 
-task :startup => :nostartup do
-  startup_file = "./lib/picloud/startup.rb"
-  system "sudo cp #{startup_file} /etc/init.d/picloud -f"
-  system "sudo chmod 777 /etc/init.d/picloud"
-  system "sudo update-rc.d -f picloud defaults"
-end
-
-task :nostartup do
-  system "sudo rm /etc/init.d/picloud"
-  system "sudo update-rc.d picloud remove"
+task :thin_service do
+  root = File.dirname(__FILE__)
+  home = `echo ~`.chomp
+  rvm_current = `rvm current`.chomp
+  `rvmsudo thin install`
+  `rvmsudo update-rc.d -f thin defaults`
+  `rvmsudo thin config -C /etc/thin/picloud.yml -c #{root} -d -p 80`
+  `rvm wrapper #{rvm_current} bootup thin`
+  begin
+    thin_init = "/etc/init.d/thin"
+    init_content = File.read(thin_init)
+    init_content.gsub!(/DAEMON=.*$/, "DAEMON=#{home}/.rvm/bin/bootup_thin")
+    File.open(thin_init,"w"){|f| f.write init_content}
+  rescue
+    puts "Couldn't edit #{thin_init}. Please run 'rvmsudo rake thin_service'"
+  end
 end
 
 task :default => :run
