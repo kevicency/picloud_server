@@ -3,6 +3,8 @@ $(document).ready(function() {
   function imageLoaded(e) {
     var img = $("#preview");
     img.attr("src", e.target.result);
+    img.css("visibility", "visible");
+    $("#preview_alt").remove();
   }
 
   function handleImage(file) {

@@ -6,7 +6,8 @@ module Picloud
 
   class Server < Sinatra::Base
 
-    set :root, File.expand_path("../../..", __FILE__)
+    root_dir = File.expand_path("../../..", __FILE__)
+    set :root, root_dir
 
     get "/" do
       haml :index

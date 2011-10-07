@@ -1,8 +1,11 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    daemons (1.1.4)
+    eventmachine (0.12.10)
     haml (3.1.3)
-    rack (1.3.2)
+    init (1.2.1)
+    rack (1.3.3)
     rack-test (0.5.7)
       rack (>= 1.0)
     right_aws (2.1.0)
@@ -11,6 +14,10 @@ GEM
     sinatra (1.2.6)
       rack (~> 1.1)
       tilt (>= 1.2.2, < 2.0)
+    thin (1.2.11)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
     tilt (1.3.3)
     uuidtools (2.1.2)
 
@@ -19,8 +26,9 @@ PLATFORMS
 
 DEPENDENCIES
   haml
-  rack (= 1.3.2)
+  init
   rack-test (= 0.5.7)
   right_aws
   sinatra (= 1.2.6)
+  thin
   uuidtools
