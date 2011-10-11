@@ -1,3 +1,6 @@
+require "picloud/picassound"
+require "picloud/errors"
+
 module Picloud
 
   class Server
@@ -19,7 +22,7 @@ module Picloud
 
       content_type :json
       if ids.nil?
-        {song_count: Picassound.songlist.count}.to_json
+        {song_count: Picassound.songlist.length}.to_json
       else
         ids.split(",").map do |id|
           Picassound.songlist[id.to_i] if id =~ /\d+/
@@ -42,12 +45,22 @@ module Picloud
 
     get "/profiles/:id" do
       begin
+        profile = Profile.load(params[:id]).to_json
+
         content_type :json
-        Profile.load(params[:id]).to_json
+        profile
       rescue UnknownProfileIdError
         halt 404
       rescue CorruptProfileError
         halt 500, "profile corrupted"
+      end
+    end
+
+    delete "/profiles/:id" do
+      begin
+        Profile.delete(params[:id])
+      rescue UnknownProfileIdError
+        halt 404
       end
     end
 

@@ -1,6 +1,7 @@
 require "json"
 require "uuidtools"
 require "picloud/aws"
+require "picloud/errors"
 
 module Picloud
 
@@ -19,7 +20,7 @@ module Picloud
         end
       end
 
-      json_profile = profile.to_json.encode(Aws.encoding) #JSON.pretty_generate profile
+      json_profile = profile.to_json.encode(Aws.encoding)
       Aws.bucket.put(key, json_profile, {}, nil, {'content-type' => "application/json"})
     end
 
@@ -49,6 +50,13 @@ module Picloud
       }
     end
 
+    def delete(profile_id)
+      key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
+      raise UnknownProfileIdError.new profile_id unless key.exists?
+
+      key.delete
+    end
+
     private
 
     def profile_key(arg)
@@ -59,32 +67,6 @@ module Picloud
 
     def generate_profile_id
       UUIDTools::UUID.random_create.to_s
-    end
-  end
-
-  class InvalidDeviceIdError < RuntimeError
-    attr_accessor :profile_id, :device_id
-
-    def initialize(profile_id, device_id)
-      @profile_id = profile_id
-      @device_id = device_id
-    end
-  end
-
-  class UnknownProfileIdError < RuntimeError
-    attr_accessor :profile_id
-
-    def initialize(profile_id)
-      @profile_id = profile_id
-    end
-  end
-
-  class CorruptProfileError < RuntimeError
-    attr_accessor :profile_id
-
-    def initialize(profile_id, message)
-      super message
-      @profile_id = profile_id
     end
   end
 end

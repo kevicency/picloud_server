@@ -4,6 +4,7 @@ $:.unshift(File.dirname(__FILE__)) unless
 require "rubygems"
 
 require "picloud/aws"
+require "picloud/errors"
 require "picloud/picassound"
 require "picloud/songlist"
 require "picloud/profile"

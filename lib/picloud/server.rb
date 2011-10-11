@@ -1,5 +1,4 @@
 require "sinatra/base"
-require "picloud/picassound"
 require "haml"
 
 module Picloud

@@ -7,7 +7,7 @@ require "json"
 #end
 
 task :console do
-  exec "irb -Ilib -picloud"
+  exec "irb -Ilib lib/picloud.rb"
 end
 
 task :run => :setup do
