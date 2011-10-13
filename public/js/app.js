@@ -1,10 +1,22 @@
 $(document).ready(function() {
 
+  var isRecommending = false;
+
   function imageLoaded(e) {
     var img = $("#preview");
     img.attr("src", e.target.result);
     img.css("visibility", "visible");
     $("#preview_alt").remove();
+  }
+
+  function showProgress() {
+    isRecommending = true;
+    $("#progress").css("visibility", "visible")
+  }
+
+  function hideProgress() {
+    isRecommending = false;
+    $("#progress").css("visibility", "collapse")
   }
 
   function handleImage(file) {
@@ -13,16 +25,18 @@ $(document).ready(function() {
     xhr.open("POST", "/recommend" , true);
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
+        hideProgress();
         data = {};
         data["songs"] = $.parseJSON(xhr.responseText);
-        var playlist = $("#playlist");
-        playlist.html("");
+        var songs = $("#songs");
+        songs.empty();
         $.get('/js/songlist.js.tmpl', function(template) {
-          $.tmpl(template, data).appendTo(playlist);
+          $.tmpl(template, data).appendTo(songs);
         });
       }
     }
     xhr.send(file);
+    showProgress();
 
     var reader = new FileReader();
     reader.onloadend = imageLoaded;
@@ -41,7 +55,6 @@ $(document).ready(function() {
     return false;
   }
 
-
   function nullHandler(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -50,9 +63,9 @@ $(document).ready(function() {
   function dropHandler(e) {
     nullHandler(e);
 
-    $("#errors").html("");
+    $("#errors").empty();
     var files = e.originalEvent.dataTransfer.files
-    if (checkFiles(files))
+    if (!isRecommending && checkFiles(files))
       handleImage(files[0])
   }
 
