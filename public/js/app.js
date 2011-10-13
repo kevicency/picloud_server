@@ -11,6 +11,7 @@ $(document).ready(function() {
 
   function showProgress() {
     isRecommending = true;
+    $("#songs").empty();
     $("#progress").css("visibility", "visible")
   }
 
@@ -28,10 +29,8 @@ $(document).ready(function() {
         hideProgress();
         data = {};
         data["songs"] = $.parseJSON(xhr.responseText);
-        var songs = $("#songs");
-        songs.empty();
         $.get('/js/songlist.js.tmpl', function(template) {
-          $.tmpl(template, data).appendTo(songs);
+          $.tmpl(template, data).appendTo("#songs");
         });
       }
     }
