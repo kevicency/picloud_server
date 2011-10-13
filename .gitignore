@@ -1,3 +1,5 @@
 cfg/aws_keys.json
 log
 tmp
+tags
+docs

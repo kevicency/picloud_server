@@ -5,7 +5,7 @@ gem "thin"
 gem "right_aws"
 gem "uuidtools"
 gem "haml"
-gem "init"
+gem "rocco"
 
 group :test do
   gem "rack-test", "0.5.7"

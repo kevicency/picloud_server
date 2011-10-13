@@ -1,43 +1,58 @@
 require "net/http"
 require "json"
 require "uuidtools"
-require "picloud/profile"
-require "picloud/songlist"
 
+## Picloud::Picassound
+
+# Ruby interface for the *Picassound* Web Service
 module Picloud
+  class Picassound
 
-  class << (Picassound = Object.new)
+    DEFAULT_ENDPOINT = "http://localhost:8080/iOS/Recommend"
+    DEFAULT_IMAGE_DIR = "/local/picassound/images"
 
+    # Creates a new Picassound instance. It expects two parameters:
+    #
+    # * `endpoint`: Endpoint of the Picassound web service. _Defaults to
+    # Picassound::DEFAULT_ENDPOINT_.
+    #
+    # * `image_dir`: Directory where the images are stored. _Defaults to
+    # Picassound::DEFAULT_IMAGE_DIR_.
+    #
+    def initialize(endpoint = nil, image_dir = nil)
+      @endpoint = URI.parse(endpoint || DEFAULT_ENDPOINT)
+      @image_dir = image_dir || DEFAULT_IMAGE_DIR
+    end
+
+    # Recommends songs for an `image` from the list of `available_song_ids`.
+    # If `available_song_ids` is omitted, all known songs are used for
+    # recommendation
+    def recommend(image, available_song_ids = nil)
+      image_file = store_image image
+      params = {
+        Image: image_file
+      }
+      params[:SongIds] = available_song_ids.join(",") unless available_song_ids.nil?
+
+      request params
+    end
+
+    # Recommends songs for an `image`. The list of available songs is derived
+    # from the Profile which belongs to the `profile_id`
     def recommend_for_profile(image, profile_id)
       image_file = store_image image
       params = {
         Image: image_file,
         ProfileId: profile_id
       }
-      post_request params
+      request params
     end
 
-    def recommend(image, available_song_ids)
-      image_file = store_image image
-      params = recommend_params(image_file, available_song_ids)
-
-      post_request params
-    end
-
-    def songlist
-      @songlist ||= Songlist.new config[:song_file]
-    end
+    ## Private Methods
 
     private
 
-    def config
-      @config ||= JSON.parse((File.read "/local/picassound/picassound.json"), :symbolize_names => true)
-    end
-
-    def recommend_uri
-      @recommend_uri ||= URI.parse(config[:recommend_uri])
-    end
-
+    # Creates the params for the recommendation request
     def recommend_params(image_file, song_ids = nil)
       params = { Image: image_file }
       params[:SongIds] = song_ids.join(",") unless song_ids.nil?
@@ -45,22 +60,21 @@ module Picloud
       return params
     end
 
-    def post_request(params)
-      res = Net::HTTP.post_form(recommend_uri, params)
+    # Request the recommended songs for `params` from the Picassound Web Service
+    def request(params)
+      res = Net::HTTP.post_form(@endpoint, params)
 
       if res.is_a? Net::HTTPSuccess
-        ids = JSON.parse(res.body)
-        ids.map do |id|
-          songlist[id.to_i]
-        end
+        JSON.parse(res.body)
       else
         raise res.error!
       end
     end
 
+    # Stores the `image` on disk and returns the path to the `image`
     def store_image(image)
       name = "#{UUIDTools::UUID.random_create.to_s}.#{image[:type]}"
-      path = File.join(config[:image_dir], name)
+      path = File.join(@image_dir, name)
       File.open(path, "w") {|f| f.write image[:data]}
 
       path

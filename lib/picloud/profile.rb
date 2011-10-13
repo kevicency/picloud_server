@@ -1,72 +1,43 @@
 require "json"
-require "uuidtools"
-require "picloud/aws"
-require "picloud/errors"
+require "picloud/s3_entity.rb"
+#require "picloud/errors"
+
+# # Picloud::Profile
+# A *Profile* associates a subset of the available songs with an user.
 
 module Picloud
+  class Profile
+    # Include the *S3Entity* mixin to save the *Profile* on S3
+    include S3Entity
 
-  class << (Profile = Object.new)
+    # Id of the device used to create the *Profile*
+    attr_reader :device_id
+    # Songs associated with this profile
+    attr_reader :songs
 
-    def store(profile)
-      key = profile_key profile
-      if key.exists?
-        begin
-          loaded_profile = Profile.load key
-          if loaded_profile[:device_id] != profile[:device_id]
-            raise InvalidDeviceIdError.new profile[:id], profile[:device_id]
-          end
-        rescue CorruptProfileError
-          # just override it
-        end
-      end
-
-      json_profile = profile.to_json.encode(Aws.encoding)
-      Aws.bucket.put(key, json_profile, {}, nil, {'content-type' => "application/json"})
+    # Creates a new *Profile* with the specified `device_id` and `songs`.
+    # If no `id` is passed, a fresh id is generated.
+    def initialize(device_id, songs, id = nil)
+      @id = id
+      @device_id = device_id
+      @songs = songs
     end
 
-    def load(profile_id)
-      key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
-      raise UnknownProfileIdError.new profile_id unless key.exists?
-
-      json_profile = (Aws.bucket.get key).encode("UTF-8")
-      begin
-        profile = JSON.parse(json_profile, :symbolize_names => true)
-      rescue JSON::ParserError => ex
-        raise CorruptProfileError.new profile_id, ex.message
-      end
-
-      return profile
+    # JSON representation of the *Profile*.
+    # This method is required by the *S3Entity* Mixin.
+    def serialize
+      {
+        id: @id,
+        device_id: @device_id,
+        songs: @songs
+      }.to_json
     end
 
-    def create(device_id, songs, profile_id = nil)
-      if profile_id.nil? || profile_id.whitespace?
-        profile_id = generate_profile_id
-      end
-
-      return {
-        id: profile_id,
-        device_id: device_id,
-        songs: songs
-      }
-    end
-
-    def delete(profile_id)
-      key = profile_id.is_a?(RightAws::S3::Key) ? profile_id : (profile_key profile_id)
-      raise UnknownProfileIdError.new profile_id unless key.exists?
-
-      key.delete
-    end
-
-    private
-
-    def profile_key(arg)
-      id = arg.is_a?(Hash) ? arg[:id] : arg
-
-      Aws.bucket.key "profiles/#{id}.json"
-    end
-
-    def generate_profile_id
-      UUIDTools::UUID.random_create.to_s
+    # Create a *Profile* from JSON representation.
+    # This method is required by the *S3Entity* Mixin.
+    def self.deserialize(json)
+      data = JSON.parse(json, :symbolize_names => true)
+      Profile.new(data[:device_id], data[:songs], data[:id])
     end
   end
 end

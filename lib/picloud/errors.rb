@@ -1,36 +1,42 @@
 module Picloud
 
+  ## Picloud::InvalidDeviceIdError
+
   # Raised when the device id doesnt match the Profile
   class InvalidDeviceIdError < RuntimeError
     # Id of the Profile
-    attr_accessor :profile_id
+    attr_accessor :id
     # Id of the device
     attr_accessor :device_id
 
-    def initialize(profile_id, device_id)
-      @profile_id = profile_id
+    def initialize(id, device_id)
+      @id = profile_id
       @device_id = device_id
     end
   end
 
-  # Raised when a Profile was not found
-  class UnknownProfileError < RuntimeError
-    # Id of the Profile
-    attr_accessor :profile_id
+  ## Picloud::UnknownProfileError
 
-    def initialize(profile_id)
-      @profile_id = profile_id
+  # Raised when a Profile was not found
+  class UnknownEntityError < RuntimeError
+    # Id of the Profile
+    attr_accessor :id
+
+    def initialize(id)
+      @id = id
     end
   end
 
-  # Raised when a Profile could not be loaded corectly
-  class CorruptProfileError < RuntimeError
-    # Id of the Profile
-    attr_accessor :profile_id
+  ## Picloud::CorruptProfileError
 
-    def initialize(profile_id, message)
+  # Raised when a Profile could not be loaded correctly
+  class CorruptEntityError < RuntimeError
+    # Id of the Profile
+    attr_accessor :id
+
+    def initialize(id, message)
       super message
-      @profile_id = profile_id
+      @id = profile_id
     end
   end
 end

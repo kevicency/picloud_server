@@ -10,7 +10,6 @@ set :environment, :production
 #$stdout.reopen(log)
 #$stderr.reopen(log)
 
-map "/" do
-  run Picloud::Server
-end
+run Picloud::Server.new
+
 

@@ -1,23 +1,33 @@
 require "rake/testtask"
 require "json"
+require "rocco/tasks"
 
 #Rake::TestTask.new do |t|
 #t.libs << "test"
 #t.test_files = FileList["test/test_*.rb"]
 #end
 
+desc "Open irb and load all Picloud libs"
 task :console do
   exec "irb -Ilib lib/picloud.rb"
 end
 
+desc "Starts the Thin server as a daemon"
 task :run => :setup do
   exec "rvmsudo thin start -R config.ru -p 80 -d"
 end
 
-task :setup => [:check_picassound, :copy_configs, :load_ec2_metadata] do
+desc "Kills the Thin daemon"
+task :kill do
+  exec "rvmsudo thin stop -R config.ru"
+end
+
+desc "Sets up the environment for Picloud"
+task :setup => [:validate_picassound, :copy_configs, :load_ec2_metadata] do
 
 end
 
+desc "Downloads the ec2 metadata file"
 task :load_ec2_metadata do
   metadata_file = "/local/ec2-metadata"
 
@@ -28,16 +38,18 @@ task :load_ec2_metadata do
   end
 end
 
+desc "Copies the config files from './cfg' to the app folder"
 task :copy_configs do
   config_files = ["aws", "aws_keys", "picassound"]
-  local_root = "/local/picassound/"
+  app_folder = "/local/picassound/"
   config_files.map {|file| "./cfg/#{file}.json" }.each do |file|
     raise "#{file} not found" unless File.exists? file
-    system "sudo cp #{file} #{local_root}#{File.basename file} -f"
+    system "sudo cp #{file} #{app_folder}#{File.basename file} -f"
   end
 end
 
-task :check_picassound do
+desc "Validates the existence of all required files/directories"
+task :validate_picassound do
   config = File.read "./cfg/picassound.json"
   files = JSON.parse config, :symbolize_names => true
   files.each do |name, path|
@@ -50,6 +62,7 @@ task :check_picassound do
   end
 end
 
+desc "Installs Picloud as Thin service with is started on startup and can be started/stoped"
 task :thin_service do
   root = File.dirname(__FILE__)
   home = `echo ~`.chomp
@@ -67,5 +80,14 @@ task :thin_service do
     puts "Couldn't edit #{thin_init}. Please run 'rvmsudo rake thin_service'"
   end
 end
+
+# Documentation with Rocco
+Rocco::make 'docs/'
+
+desc 'Build rocco docs'
+task :docs => :rocco
+
+# Alias for docs task
+task :doc => :docs
 
 task :default => :run
