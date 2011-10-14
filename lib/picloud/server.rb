@@ -91,12 +91,26 @@ module Picloud
         data: (request.body.read)
       }
       halt 400, "Invalid Content-Type" unless image[:type]
-      recommended_song_ids = @picassound.recommend_for_profile(image, params[:id])
 
-      content_type :json
-      recommended_song_ids.map do |id|
-        @songlist[id]
-      end.to_json
+      begin
+        recommended_song_ids = @picassound.recommend_for_profile(image, params[:id])
+
+        content_type :json
+        recommended_song_ids.map do |id|
+          @songlist[id]
+        end.to_json
+      rescue Picloud::RecommendationError => ex
+        puts "error"
+        puts ex.message
+        halt 400, ex.message
+      end
+    end
+
+    get "/profiles/:id/recommend" do
+      halt 404 unless Profile.exists? params[:id]
+
+      @profile_id = params[:id]
+      haml :index
     end
 
     post "/recommend" do

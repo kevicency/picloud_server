@@ -46,6 +46,10 @@
   visibility: collapse;
 }
 
+#profile_id {
+  visibility: collapse;
+}
+
 
 .song {
   padding-bottom: 3px;

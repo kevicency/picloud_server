@@ -67,7 +67,7 @@ module Picloud
       if res.is_a? Net::HTTPSuccess
         JSON.parse(res.body)
       else
-        raise res.error!
+        raise Picloud::RecommendationError.new res.message
       end
     end
 

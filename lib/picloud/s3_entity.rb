@@ -92,7 +92,8 @@ module Picloud
       self.class.key(id)
     end
 
-    # Generates a unique id for the *S3Entity*
+    # Returns the id of the *S3Entity*. If the id is `nil`, a fresh on is
+    # generated
     def id
       @id ||= UUIDTools::UUID.random_create.to_s
     end

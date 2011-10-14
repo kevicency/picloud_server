@@ -21,17 +21,26 @@ $(document).ready(function() {
   }
 
   function handleImage(file) {
+    var profile_id = $("#profile_id").html();
+    var recommend_url = "/recommend";
+    if (profile_id !== "") {
+      recommend_url = "/profiles/" + profile_id + recommend_url;
+    }
     var xhr    = new XMLHttpRequest();
     var upload = xhr.upload;
-    xhr.open("POST", "/recommend" , true);
+    xhr.open("POST", recommend_url, true);
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         hideProgress();
-        data = {};
-        data["songs"] = $.parseJSON(xhr.responseText);
-        $.get('/js/songlist.js.tmpl', function(template) {
-          $.tmpl(template, data).appendTo("#songs");
-        });
+        if (xhr.status === 200) {
+          data = {};
+          data["songs"] = $.parseJSON(xhr.responseText);
+          $.get('/js/songlist.js.tmpl', function(template) {
+            $.tmpl(template, data).appendTo("#songs");
+          });
+        } else {
+          $("</p>").addClass("error").html("There was an error with your request").appendTo("#errors");
+        }
       }
     }
     xhr.send(file);

@@ -15,6 +15,12 @@ module Picloud
     end
   end
 
+  ## Picloud::RecommendationError
+
+  # Raised when an error occured during recommendation
+  class RecommendationError < RuntimeError
+  end
+
   ## Picloud::UnknownProfileError
 
   # Raised when a Profile was not found

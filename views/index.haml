@@ -11,7 +11,6 @@
     #dropbox
       #preview_alt Drop Image here
       %img#preview
-      #errors
     #playlist
       %h1 Playlist
       #songs
@@ -19,3 +18,5 @@
       #progress
         %img#loadingIcon{:src => "/images/loading.gif"}
         %p Recommending Songs...
+      #errors
+    #profile_id=@profile_id if @profile_id
