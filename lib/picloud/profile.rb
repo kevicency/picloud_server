@@ -1,5 +1,5 @@
 require "json"
-require "picloud/s3_entity.rb"
+require "picloud/s3_entity"
 #require "picloud/errors"
 
 # # Picloud::Profile
@@ -21,6 +21,10 @@ module Picloud
       @id = id
       @device_id = device_id
       @songs = songs
+    end
+
+    def song_ids
+      @songs.map { |song| song[:id] }
     end
 
     # JSON representation of the *Profile*.

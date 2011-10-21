@@ -16,10 +16,8 @@ module Picloud
 
     def initialize
       super
-      config_file = File.join(settings.root, "cfg/picassound.json")
-      config = JSON.parse((File.read config_file), :symbolize_names => true)
-      @songlist = Songlist.load config[:song_file]
-      @picassound = Picassound.new(config[:recommend_endpoint], config[:image_dir])
+      @songlist = Songlist.load Config.song_file
+      @picassound = Picassound.new Config.endpoint
     end
 
     get "/" do
@@ -86,23 +84,17 @@ module Picloud
     end
 
     post "/profiles/:id/recommend" do
-      image = {
-        type: (get_image_type request.content_type),
-        data: (request.body.read)
-      }
-      halt 400, "Invalid Content-Type" unless image[:type]
-
       begin
-        recommended_song_ids = @picassound.recommend_for_profile(image, params[:id])
+        image = get_image request
+        rofile = Profile.load(profile_id)
+        recommended_song_ids = @picassound.recommend(image, profile.song_ids)
 
         content_type :json
         recommended_song_ids.map do |id|
           @songlist[id]
         end.to_json
-      rescue Picloud::RecommendationError => ex
-        puts "error"
-        puts ex.message
-        halt 400, ex.message
+      rescue RuntimeError
+        halt 400, "Invalid Request.\n#{ex.message}"
       end
     end
 
@@ -114,25 +106,27 @@ module Picloud
     end
 
     post "/recommend" do
-      image = {
-        type: (get_image_type request.content_type),
-        data: (request.body.read)
-      }
-      halt 400, "Invalid Content-Type" unless image[:type]
-      ids = params[:song_ids].split(",").map{|id| id.to_i} if params[:song_ids]
-      recommended_song_ids = @picassound.recommend(image, ids)
+      begin
+        image = get_image request
+        song_ids = params[:song_ids].split(",").map{|id| id.to_i} if params[:song_ids]
+        recommended_song_ids = @picassound.recommend(image, song_ids)
 
-      content_type :json
-      recommended_song_ids.map do |id|
-        @songlist[id]
-      end.to_json
+        content_type :json
+        recommended_song_ids.map do |id|
+          @songlist[id]
+        end.to_json
+      rescue RuntimeError
+        halt 400, "Invalid Request.\n#{ex.message}"
+      end
     end
 
     private
 
-    def get_image_type(content_type)
-      match = content_type.match(/image\/(?<type>\w+)/) if content_type
-      match[:type] if match
+    def get_image(request)
+      type_match = request.content_type.match(/image\/(?<type>\w+)/)
+      type = type_match[:type] if type_match
+
+      Image.new(type, request.body.read)
     end
 
     # Endpoint for the Load Balancer healthy check

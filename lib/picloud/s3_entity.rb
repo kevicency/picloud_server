@@ -39,33 +39,15 @@ module Picloud
         ((key id).delete if exists? id) || false
       end
 
-      #### Private Class Methods
-
-      private
-
-      # Return a hash which contains data that is needed by the S3 Interface
-      def s3_config
-        if @s3_config.nil?
-          cfg_dir = File.expand_path("../../../cfg", __FILE__)
-          puts cfg_dir
-          @s3_config = {}
-          ["aws_keys.json", "aws.json"].each do |cfg|
-            cfg_file = File.join(cfg_dir, cfg)
-            @s3_config.merge! JSON.parse((File.read cfg_file), :symbolize_names => true)
-          end
-        end
-        @s3_config
-      end
-
       # S3 Interface
       def s3
-        @s3 ||= RightAws::S3.new(s3_config[:access_key],
-                                 s3_config[:secret_key])
+        @s3 ||= RightAws::S3.new(Config.access_key,
+                                 Config.secret_key)
       end
 
       # The S3 bucket
       def bucket
-        s3.bucket s3_config[:bucket_name]
+        s3.bucket Config.bucket_name
       end
 
       # Returns a bucket key for `id`
@@ -76,7 +58,7 @@ module Picloud
 
       # The encoding to which the JSON string is encoded before uploading
       def encoding
-        s3_config[:encoding]
+        Config.encoding
       end
     end
 
