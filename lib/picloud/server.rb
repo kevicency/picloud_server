@@ -86,7 +86,7 @@ module Picloud
     post "/profiles/:id/recommend" do
       begin
         image = get_image request
-        rofile = Profile.load(profile_id)
+        profile = Profile.load(params[:id])
         recommended_song_ids = @picassound.recommend(image, profile.song_ids)
 
         content_type :json

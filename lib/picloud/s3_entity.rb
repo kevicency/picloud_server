@@ -42,7 +42,8 @@ module Picloud
       # S3 Interface
       def s3
         @s3 ||= RightAws::S3.new(Config.access_key,
-                                 Config.secret_key)
+                                 Config.secret_key,
+                                 Config.s3)
       end
 
       # The S3 bucket

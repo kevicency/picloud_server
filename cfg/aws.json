@@ -12,6 +12,6 @@
     "server": "s3.amazonaws.com",
     "port": 443,
     "protocol": "https",
-    "multi_thread": false
+    "multi_thread": true
   }
 }

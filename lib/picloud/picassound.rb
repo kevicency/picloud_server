@@ -23,28 +23,30 @@ module Picloud
     # If `available_song_ids` is omitted, all known songs are used for
     # recommendation
     def recommend(image, available_song_ids = nil)
-      image_path = image.path || image.store # store the image if it isn't already stored
-      params = {
-        Image: image_path
-      }
-      params[:SongIds] = available_song_ids.join(",") unless available_song_ids.nil?
-
-      do_request params
+      req = build_request image, available_song_ids
+      res = Net::HTTP.new(@endpoint.host, @endpoint.port).start{|http| http.request(req)}
+      if res.is_a? Net::HTTPSuccess
+        JSON.parse(res.body)
+      else
+        raise Picloud::RecommendationError.new res.message
+      end
     end
 
     ## Private Methods
 
     private
 
-     # Request the recommended songs for `params` from the Picassound Web Service
-    def do_request(params)
-      res = Net::HTTP.post_form(@endpoint, params)
+    # Builds the HTTP::Post request for the Picassound Web Service and returns
+    # it
+    def build_request(image, available_song_ids)
+      path = @endpoint.path
+      path += "?SongIds=#{available_song_ids.join ","}" unless available_song_ids.nil?
+      req = Net::HTTP::Post.new path
+      req.body = image.data
+      req.content_length = image.size
+      req.content_type = "image/#{image.type}"
 
-      if res.is_a? Net::HTTPSuccess
-        JSON.parse(res.body)
-      else
-        raise Picloud::RecommendationError.new res.message
-      end
+      return req
     end
   end
 end
