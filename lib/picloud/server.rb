@@ -93,7 +93,7 @@ module Picloud
         recommended_song_ids.map do |id|
           @songlist[id]
         end.to_json
-      rescue RuntimeError
+      rescue RuntimeError => ex
         halt 400, "Invalid Request.\n#{ex.message}"
       end
     end
@@ -115,7 +115,7 @@ module Picloud
         recommended_song_ids.map do |id|
           @songlist[id]
         end.to_json
-      rescue RuntimeError
+      rescue RuntimeError => ex
         halt 400, "Invalid Request.\n#{ex.message}"
       end
     end
