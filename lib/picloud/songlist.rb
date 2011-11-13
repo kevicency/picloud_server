@@ -5,9 +5,11 @@
 
 module Picloud
   class Songlist
+    attr_reader :length
 
     # Initializes a new *Songlist* instance and calls `add` for each song in `songs`.
     def initialize(songs = [])
+      @length = 0;
       @songs_by_artist = {}
       @songs_by_id = []
       songs.each do |song|
@@ -30,12 +32,14 @@ module Picloud
         songlist = Songlist.new
         while (line = file.gets) do
           data = line.strip.split '\_/'
-          song = {
-            id: i,
-            artist: data[0],
-            title: data[1]
-          } unless data.length != 2
-          songlist.add song unless song.nil?
+          if data.length == 2
+            song = {
+              id: i,
+              artist: data[0],
+              title: data[1]
+            }
+            songlist.add song
+          end
           i += 1
         end
         songlist
@@ -53,6 +57,7 @@ module Picloud
     def add(song)
       add_by_artist song
       add_by_id song
+      @length += 1
     end
 
     # Searches for a song with given `artist` and `title`.
@@ -72,7 +77,7 @@ module Picloud
 
     # Length of the *Songlist*, i.e. number of songs
     def length
-      return @songs_by_id.length
+      return @length
     end
 
     private

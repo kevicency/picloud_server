@@ -1,8 +1,6 @@
 require "sinatra/base"
 require "haml"
 require "json"
-require "picloud/songlist"
-require "picloud/profile"
 
 ## Picloud::Server
 

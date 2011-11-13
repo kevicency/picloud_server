@@ -1,5 +1,10 @@
 require "json"
 
+## Picloud::Config
+
+# A wrapper for all *.json config files in ./cfg. Each key in the file will be a
+# method of the `Config` Module with returns the associated value.
+
 module Picloud
   module Config
     ["aws", "aws_keys", "picassound"].each do |cfg|

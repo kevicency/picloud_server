@@ -1,8 +1,8 @@
 require "json"
 require "picloud/s3_entity"
-#require "picloud/errors"
 
-# # Picloud::Profile
+## Picloud::Profile
+
 # A *Profile* associates a subset of the available songs with an user.
 
 module Picloud
@@ -31,9 +31,9 @@ module Picloud
     # This method is required by the *S3Entity* Mixin.
     def serialize
       {
-        id: @id,
-        device_id: @device_id,
-        songs: @songs
+        id: id,
+        device_id: device_id,
+        songs: songs
       }.to_json
     end
 

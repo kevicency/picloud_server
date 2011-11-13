@@ -3,7 +3,7 @@ $:.unshift "lib"
 require 'sinatra'
 
 set :environment, :production
-disable :run
+#disable :run
 
 require "picloud"
 
